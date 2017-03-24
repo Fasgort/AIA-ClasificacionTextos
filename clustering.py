@@ -4,11 +4,14 @@ import numpy as np
 from sklearn.datasets import load_iris
 iris = load_iris()
 
-num_clusters = 2
+num_clusters = 3
 data = iris.data
 initial_method = 0 # 0 - Forgy; 1 - Partición Aleatoria
 
 def kmeans(num_clusters, data, initial_method):
+    # Implementación k-medios
+    # Función de distancia: Distancia euclidiana
+    # Emplea todos los atributos de data en el cálculo de la distancia
     
     _shape = data.shape
     clusters_centroid = np.empty([num_clusters, _shape[1]])
@@ -73,6 +76,8 @@ def kmeans(num_clusters, data, initial_method):
             clusters[c] = new_clusters[c]
                 
         if condition is False:
+            # No ha habido cambios de asignación
+            # por lo que finaliza el bucle
             return clusters, clusters_centroid                                              
 
 # Main    
