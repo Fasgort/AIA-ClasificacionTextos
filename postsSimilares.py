@@ -2,16 +2,18 @@
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.cluster import KMeans
 import unicodedata
+import operator
 import re
 import random
 from nltk import downloader
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 downloader.download("stopwords")
-np.set_printoptions(threshold=np.nan)
+np.set_printoptions(threshold=50)
 
 def preprocess(documentos):
     # Tratamiento de datos básico + stopwords + stemming
@@ -32,17 +34,75 @@ categories = ["comp.graphics", "comp.os.ms-windows.misc", "comp.sys.ibm.pc.hardw
 
 # Cargamos los conjuntos de entrenamiento y test
 newsgroups_train = fetch_20newsgroups(subset='train', remove=('headers', 'footers', 'quotes'), categories=categories)
-newsgroup_test = fetch_20newsgroups(subset='test', remove=('headers', 'footers', 'quotes'), categories=categories)
+newsgroups_test = fetch_20newsgroups(subset='test', remove=('headers', 'footers', 'quotes'), categories=categories)
 
 # Preprocesamos los posts, siguiendo lo aprendido en la tarea 2
-newsgroups_train.data = preprocess(newsgroups_train.data)
+newsgroups_train.preprocessed = preprocess(newsgroups_train.data)
 
-# Vectorizamos el conjunto de entrenamiento
+# Vectorizamos el conjunto de entrenamiento y test
 vectorizer = TfidfVectorizer()
-vectors_train = vectorizer.fit_transform(newsgroups_train.data)
+vectors_train = vectorizer.fit_transform(newsgroups_train.preprocessed)
 
 # Generamos 6 clústeres a partir del conjunto de entrenamiento
+# Un cluster por cada categoría
 kmeans = KMeans(n_clusters=6, init='k-means++', n_init=10, max_iter=300).fit(vectors_train)
+kmeans_train_index = kmeans.predict(vectors_train)
 
 # Seleccionamos al azar, un post del conjunto de test, para emplear como consulta
-post_num = random.randint(0, len(newsgroup_test.data))
+post_num = random.randint(0, len(newsgroups_test.data))
+post_data = newsgroups_test.data[post_num]
+post_target = newsgroups_test.target[post_num]
+
+# Preprocesamos la consulta
+post_preprocessed = preprocess([post_data])[0]
+vector_test = vectorizer.transform([post_preprocessed])[0]
+
+# Consultamos a que clúster se aproxima más a la consulta
+test_cluster = kmeans.predict(vector_test)
+
+# Miramos que posts pertenecen al mismo clúster que la consulta
+post_list = []
+for p in range(len(kmeans_train_index)):
+    if kmeans_train_index[p] == test_cluster:
+        post_list.append(p)
+
+# Realizamos medidas de similitud entre los posts del clúster y la consulta
+relevancia = []
+for d in range(len(post_list)):
+    relevancia.append((post_list[d], newsgroups_train.target[post_list[d]], pairwise_distances(vectors_train.getrow(post_list[d]), vector_test, metric='cosine')[0][0]))
+relevancia.sort(key=operator.itemgetter(2))
+
+# Nos quedamos con los 20 posts más similares
+similares = relevancia[:20:]
+
+# Medimos cuantos de ellos pertenecen a la misma categoría
+misma_categoria = 0
+for s in similares:
+    if s[1] == post_target:
+        misma_categoria += 1
+
+# Impresión de resultados
+print("Hemos cogido aleatoriamente un post del conjunto de test, para buscar aquellos posts más similares en el conjunto de entrenamiento.")
+print("El nuevo post, empleado como consulta, pertenece a la categoría " + str(post_target) + " (" + str(newsgroups_test.target_names[post_target]) + ") y empieza así:")
+print()
+print("########################################################################################")
+print(post_data[:300])
+print("########################################################################################")
+print()
+
+print("Realizada la búsqueda de posts más similares, obtenemos los 5 siguientes resultados más similares.")
+print("[INDEX, CATEGORIA, SIMILITUD_INVERSA]")
+print()
+print(similares)
+print()
+
+print("Podemos medir la eficacia de la clusterización, mediante el porcentaje de post similares que pertenecen a la misma categoría que el post de consulta.")
+print("De 20 post similares, " + str(misma_categoria) + " pertenecen a la misma categoría, por lo que obtenemos un " + str(misma_categoria*100/20) + "% de precisión.")
+print()
+
+print("El post más similar empieza así:")
+print()
+print("########################################################################################")
+print(newsgroups_train.data[similares[0][0]][:300])
+print("########################################################################################")
+print()
