@@ -158,6 +158,7 @@ class ClasificadorNoEntrenado(Exception): pass
 # LEER LOS COMENTARIOS AL CรDIGO
 
 import numpy as np
+from math import log
 
 class ClasificadorNaiveBayes(MetodoClasificacion):
 
@@ -224,6 +225,19 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
                 
         # Asignando probabilidades
         
+        # Clases
+        for c in range(len(self.clases)):
+            self.clases.prob[c] = log(self.clases.prob[c]/(len(entr.votos_clases)-value_clase_unknown))
+        
+        # Atributos
+        for a in range(len(self.atributos)):
+            for c in range(len(self.clases)):
+                self.atributos[a].prob[c] = log(self.atributos[a].prob[c]/self.clases.prob[c])
+                
+        ###
+        # Falta incorporar el suavizado, pero de
+        # momento vamos con una versión básica
+        ###
         
         # *********** COMPLETA EL CรDIGO **************
         
