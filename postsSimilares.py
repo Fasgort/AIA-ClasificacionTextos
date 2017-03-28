@@ -72,8 +72,8 @@ for d in range(len(post_list)):
     relevancia.append((post_list[d], newsgroups_train.target[post_list[d]], pairwise_distances(vectors_train.getrow(post_list[d]), vector_test, metric='cosine')[0][0]))
 relevancia.sort(key=operator.itemgetter(2))
 
-# Nos quedamos con los 20 posts más similares
-similares = relevancia[:20:]
+# Nos quedamos con los 5 posts más similares
+similares = relevancia[:5:]
 
 # Medimos cuantos de ellos pertenecen a la misma categoría
 misma_categoria = 0
@@ -82,6 +82,7 @@ for s in similares:
         misma_categoria += 1
 
 # Impresión de resultados
+print()
 print("Hemos cogido aleatoriamente un post del conjunto de test, para buscar aquellos posts más similares en el conjunto de entrenamiento.")
 print("El nuevo post, empleado como consulta, pertenece a la categoría " + str(post_target) + " (" + str(newsgroups_test.target_names[post_target]) + ") y empieza así:")
 print()
@@ -97,7 +98,7 @@ print(similares)
 print()
 
 print("Podemos medir la eficacia de la clusterización, mediante el porcentaje de post similares que pertenecen a la misma categoría que el post de consulta.")
-print("De 20 post similares, " + str(misma_categoria) + " pertenecen a la misma categoría, por lo que obtenemos un " + str(misma_categoria*100/20) + "% de precisión.")
+print("De 5 post similares, " + str(misma_categoria) + " pertenecen a la misma categoría, por lo que obtenemos un " + str(misma_categoria*100/5) + "% de precisión para este post en concreto.")
 print()
 
 print("El post más similar empieza así:")
@@ -106,3 +107,51 @@ print("#########################################################################
 print(newsgroups_train.data[similares[0][0]][:300])
 print("########################################################################################")
 print()
+
+# Clasificación
+sum_score = 0
+for post_num in range(len(newsgroups_test.data)):
+    # Seleccionamos al azar, un post del conjunto de test, para emplear como consulta
+    post_data = newsgroups_test.data[post_num]
+    post_target = newsgroups_test.target[post_num]
+    
+    # Preprocesamos la consulta
+    post_preprocessed = preprocess([post_data])[0]
+    vector_test = vectorizer.transform([post_preprocessed])[0]
+    
+    # Consultamos a que clúster se aproxima más a la consulta
+    test_cluster = kmeans.predict(vector_test)
+    
+    # Miramos que posts pertenecen al mismo clúster que la consulta
+    post_list = []
+    for p in range(len(kmeans_train_index)):
+        if kmeans_train_index[p] == test_cluster:
+            post_list.append(p)
+    
+    # Realizamos medidas de similitud entre los posts del clúster y la consulta
+    relevancia = []
+    for d in range(len(post_list)):
+        relevancia.append((post_list[d], newsgroups_train.target[post_list[d]], pairwise_distances(vectors_train.getrow(post_list[d]), vector_test, metric='cosine')[0][0]))
+    relevancia.sort(key=operator.itemgetter(2))
+    
+    # Nos quedamos con los 5 posts más similares
+    similares = relevancia[:5:]
+    
+    # Medimos cuantos de ellos pertenecen a la misma categoría
+    misma_categoria = 0
+    for s in similares:
+        if s[1] == post_target:
+            misma_categoria += 1
+    sum_score += misma_categoria/5
+    
+    if (post_num+1) % 20 == 0 and post_num != 0:
+        print("Se han evaluado " + str(post_num+1) + " posts del conjunto de test, de " + str(len(newsgroups_test.data)) + " totales.")
+        print("Precisión provisional de la clasificación: " + str(sum_score/(post_num+1)))
+        print()
+
+# Si el usuario ha sido suficientemente paciente, presentamos la precisión final
+sum_score /= len(newsgroups_test.data)
+print()
+print("########################################################################################")
+print("Precisión final de la clusterización: " + str(sum_score))
+print("########################################################################################")
