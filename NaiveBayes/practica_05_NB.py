@@ -255,11 +255,69 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
         desconocidos. En ese caso, simplimente ignorar esos valores (pero no
         ignorar el ejemplo).
         """
+        
+        # Excepción si el clasificador no ha sido entrenado
+        if self.train == None:
+            raise ClasificadorNoEntrenado
+        
+        # Cálculo de probabilidades
+        prob_list_arr = np.zeros([len(self.clases)])
+        for c in range(len(self.clases)):
+            prob_list_arr[c] = self.train[0][c]
+            for a in range(len(self.atributos)):
+                value_attrib = ejemplo[a]
+                if value_attrib != '?':
+                    index_attrib = self.valores_atributos.get(self.atributos[a]).index(value_attrib)
+                    prob_list_arr[c] += self.train[1][a][index_attrib][c]
 
-        # *********** COMPLETA EL CรDIGO **************
+        return self.clases[np.argmax(prob_list_arr)]
 
 # ---------------------------------------------------------------------------
         
+# MAIN - Ejercicio 1
 from votes import *
-clasificador = ClasificadorNaiveBayes(votos_atributo_clasificacion, votos_clases, votos_atributos, votos_valores_atributos, 1)
-clasificador.entrena(votos_entr, votos_entr_clas, votos_valid, votos_valid_clas, False)
+
+# Se crea y entrena un clasificador para predecir el partido político de un congresista estadounidense
+clasificadorVotos = ClasificadorNaiveBayes(votos_atributo_clasificacion, votos_clases, votos_atributos, votos_valores_atributos, 1)
+clasificadorVotos.entrena(votos_entr, votos_entr_clas, votos_valid, votos_valid_clas, False)
+
+# Clasificación
+pred_test_clas = [clasificadorVotos.clasifica(x) for x in votos_test]
+
+## Resultados clasificación (pred_test_clas)
+#
+#['democrata', 'republicano', 'democrata', 'republicano', 'democrata',
+# 'republicano', 'democrata', 'democrata', 'republicano', 'republicano',
+# 'democrata', 'republicano', 'democrata', 'democrata', 'democrata',
+# 'republicano', 'republicano', 'republicano', 'democrata', 'democrata',
+# 'democrata', 'republicano', 'democrata', 'democrata', 'republicano',
+# 'republicano', 'republicano', 'republicano', 'democrata', 'republicano',
+# 'republicano', 'republicano', 'democrata', 'democrata', 'republicano',
+# 'democrata', 'republicano', 'republicano', 'democrata', 'democrata',
+# 'republicano', 'democrata', 'republicano', 'democrata', 'republicano',
+# 'democrata', 'democrata', 'democrata', 'democrata', 'republicano',
+# 'democrata', 'republicano', 'republicano', 'republicano', 'democrata',
+# 'republicano', 'republicano', 'republicano', 'democrata', 'republicano',
+# 'democrata', 'republicano', 'republicano', 'democrata', 'republicano',
+# 'republicano', 'democrata', 'democrata', 'republicano', 'democrata',
+# 'democrata', 'democrata', 'republicano', 'democrata', 'democrata',
+# 'democrata', 'democrata', 'democrata', 'democrata', 'republicano',
+# 'democrata', 'democrata', 'republicano', 'democrata', 'republicano',
+# 'republicano', 'republicano']
+#
+###
+
+# Medidas de rendimiento
+aciertos = 0
+for c in range(len(votos_test_clas)):
+    if pred_test_clas[c] == votos_test_clas[c]:
+        aciertos += 1
+
+accuracy = aciertos/len(votos_test_clas)
+print("La precisión del clasificador ha sido del " + str(accuracy*100) + "%.")
+
+## Resultados precisión (accuracy)
+#
+# La precisión del clasificador ha sido del 83.9080459770115%.
+#
+###
