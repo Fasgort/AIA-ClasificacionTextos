@@ -172,7 +172,10 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
         tomarรก como "k" la que se decida en autoajuste).
         """
         
-        self = MetodoClasificacion
+        self.atributo_clasificacion=atributo_clasificacion
+        self.clases = clases
+        self.atributos=atributos
+        self.valores_atributos=valores_atributos
         self.k = k
         
     def entrena(self,entr,clas_entr,valid,clas_valid,autoajuste=True):
@@ -260,3 +263,6 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
 
 # ---------------------------------------------------------------------------
         
+from votes import *
+clasificador = ClasificadorNaiveBayes(votos_atributo_clasificacion, votos_clases, votos_atributos, votos_valores_atributos, 1)
+clasificador.entrena(votos_entr, votos_entr_clas, votos_valid, votos_valid_clas, False)
