@@ -159,6 +159,7 @@ class ClasificadorNoEntrenado(Exception): pass
 
 import numpy as np
 from math import log
+import copy
 
 class ClasificadorNaiveBayes(MetodoClasificacion):
 
@@ -212,11 +213,12 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
         # Inicialización al vacío
         self.train[0] = np.zeros([len(self.clases)])
         self.train[1] = []
-                
         for a in range(len(self.atributos)):
             self.train[1].append(np.zeros([len(self.valores_atributos.get(self.atributos[a])), len(self.clases)]))
         
-        # Poblando la matriz
+        
+        
+        ### Poblando la matriz
         for v in range(len(entr)):
             value_clase = clas_entr[v]
             index_clase = self.clases.index(value_clase)
@@ -227,17 +229,62 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
                     continue
                 index_attrib = self.valores_atributos.get(self.atributos[a]).index(value_attrib)
                 self.train[1][a][index_attrib][index_clase] += 1
-                                          
-        # Asignando probabilidades
-    
-            # Atributos
+                         
+                          
+                          
+        ### Cálculo del ajuste para Laplace
+        if autoajuste == True:
+            conj_ajustes = [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50, 100]
+            rend_ajustes = []
+            for ajuste in conj_ajustes:
+                aux_train = copy.deepcopy(self.train)
+                
+                # Generación de probabilidades
+                for a in range(len(self.atributos)):
+                    for v in range(len(self.valores_atributos.get(self.atributos[a]))):
+                        for c in range(len(self.clases)):
+                            aux_train[1][a][v][c] = log((aux_train[1][a][v][c] + ajuste)/(aux_train[0][c] +
+                                      ajuste*len(self.valores_atributos.get(self.atributos[a]))))
+                            
+                for c in range(len(self.clases)):
+                    aux_train[0][c] = log(aux_train[0][c]/len(clas_entr))
+            
+                # Validación del ajuste
+                pred_clas_valid = []
+                for x in valid:
+                    # Clasificación del conjunto de validación
+                    prob_list_arr = np.zeros([len(self.clases)])
+                    for c in range(len(self.clases)):
+                        prob_list_arr[c] = aux_train[0][c]
+                        for a in range(len(self.atributos)):
+                            value_attrib = x[a]
+                            if value_attrib != '?':
+                                index_attrib = self.valores_atributos.get(self.atributos[a]).index(value_attrib)
+                                prob_list_arr[c] += aux_train[1][a][index_attrib][c]
+                
+                    # Clasificación obtenida
+                    pred_clas_valid.append(self.clases[np.argmax(prob_list_arr)])
+            
+                # Rendimiento obtenido con el ajuste
+                aciertos = 0
+                for c in range(len(clas_valid)):
+                    if pred_clas_valid[c] == clas_valid[c]:
+                        aciertos += 1
+                accuracy = aciertos/len(clas_valid)
+                rend_ajustes.append(accuracy)
+            
+            # Elección del mejor ajuste
+            self.k = conj_ajustes[np.argmax(rend_ajustes)]
+            
+            
+                          
+        ### Generación de probabilidades
         for a in range(len(self.atributos)):
             for v in range(len(self.valores_atributos.get(self.atributos[a]))):
                 for c in range(len(self.clases)):
                     self.train[1][a][v][c] = log((self.train[1][a][v][c] + self.k)/(self.train[0][c] +
                               self.k*len(self.valores_atributos.get(self.atributos[a]))))
         
-            # Clases
         for c in range(len(self.clases)):
             self.train[0][c] = log(self.train[0][c]/len(clas_entr))
                                                 
@@ -279,7 +326,7 @@ from votes import *
 
 # Se crea y entrena un clasificador para predecir el partido político de un congresista estadounidense
 clasificadorVotos = ClasificadorNaiveBayes(votos_atributo_clasificacion, votos_clases, votos_atributos, votos_valores_atributos, 1)
-clasificadorVotos.entrena(votos_entr, votos_entr_clas, votos_valid, votos_valid_clas, False)
+clasificadorVotos.entrena(votos_entr, votos_entr_clas, votos_valid, votos_valid_clas, True)
 
 # Clasificación
 pred_test_clas = [clasificadorVotos.clasifica(x) for x in votos_test]
@@ -312,7 +359,6 @@ aciertos = 0
 for c in range(len(votos_test_clas)):
     if pred_test_clas[c] == votos_test_clas[c]:
         aciertos += 1
-
 accuracy = aciertos/len(votos_test_clas)
 print("La precisión del clasificador ha sido del " + str(accuracy*100) + "%.")
 
