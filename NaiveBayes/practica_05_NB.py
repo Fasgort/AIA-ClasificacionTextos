@@ -215,40 +215,32 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
                 
         for a in range(len(self.atributos)):
             self.train[1].append(np.zeros([len(self.valores_atributos.get(self.atributos[a])), len(self.clases)]))
-        value_clase_unknown = 0
-        #value_attrib_unknown = np.zeros([len(self.atributos)])
         
         # Poblando la matriz
         for v in range(len(entr)):
             value_clase = clas_entr[v]
-            if value_clase == '?':
-                value_clase_unknown += 1
-                continue
-            index_clase = np.where(self.clases==value_clase)
+            index_clase = self.clases.index(value_clase)
             self.train[0][index_clase] += 1
             for a in range(len(self.atributos)):
                 value_attrib = entr[v][a]
                 if value_attrib == '?':
-                    #value_attrib_unknown[a] += 1
                     continue
-                index_attrib = np.where(self.valores_atributos.get(self.atributos[a])==value_attrib)
+                index_attrib = self.valores_atributos.get(self.atributos[a]).index(value_attrib)
                 self.train[1][a][index_attrib][index_clase] += 1
-                
+                                          
         # Asignando probabilidades
-        
-        # Clases
-        for c in range(len(self.clases)):
-            if(self.train[0][c] != 0):
-                self.train[0][c] = log(self.train[0][c]/(len(self.clases)-value_clase_unknown))
-        
-        # Atributos
+    
+            # Atributos
         for a in range(len(self.atributos)):
             for v in range(len(self.valores_atributos.get(self.atributos[a]))):
                 for c in range(len(self.clases)):
-                    if self.train[0][c] != 0 and self.train[1][a][v][c] != 0:
-                        self.train[1][a][v][c] = log((self.train[1][a][v][c] + self.k)/(self.train[0][c]) +
-                                  self.k*len(self.valores_atributos.get(self.atributos[a])))
-                        
+                    self.train[1][a][v][c] = log((self.train[1][a][v][c] + self.k)/(self.train[0][c] +
+                              self.k*len(self.valores_atributos.get(self.atributos[a]))))
+        
+            # Clases
+        for c in range(len(self.clases)):
+            self.train[0][c] = log(self.train[0][c]/len(clas_entr))
+                                                
     def clasifica(self,ejemplo):
 
         """ 
