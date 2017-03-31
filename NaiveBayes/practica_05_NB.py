@@ -178,6 +178,8 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
         self.valores_atributos=valores_atributos
         self.k = k
         
+        self.train = None
+        
     def entrena(self,entr,clas_entr,valid,clas_valid,autoajuste=True):
 
         """ 
@@ -204,46 +206,49 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
         ignorar el ejemplo).
         """
         
+        # Inicialización self.train
+        self.train = [[],[]] # clases, atributos
+        
         # Inicialización al vacío
-        self.clases.prob = np.zeros([len(self.clases)])
+        self.train[0] = np.zeros([len(self.clases)])
+        self.train[1] = []
+                
         for a in range(len(self.atributos)):
-            self.atributos[a].prob = np.zeros([len(self.valores_atributos[a]), len(self.clases)])
+            self.train[1].append(np.zeros([len(self.valores_atributos.get(self.atributos[a])), len(self.clases)]))
         value_clase_unknown = 0
-        value_attrib_unknown = np.zeros[(len(self.atributos))]
+        #value_attrib_unknown = np.zeros([len(self.atributos)])
         
         # Poblando la matriz
-        for v in range(len(entr.votos_entr)):
-            value_clase = entr.votos_entr_clas[v]
+        for v in range(len(entr)):
+            value_clase = clas_entr[v]
             if value_clase == '?':
                 value_clase_unknown += 1
                 continue
-            index_clase = np.where(entr.votos_clases==value_clase)
-            self.clases.prob[index_clase] += 1
+            index_clase = np.where(self.clases==value_clase)
+            self.train[0][index_clase] += 1
             for a in range(len(self.atributos)):
-                value_attrib = entr.votos_entr[v,a]
+                value_attrib = entr[v][a]
                 if value_attrib == '?':
-                    value_attrib_unknown[a] += 1
-                index_attrib = np.where(entr.votos_valores_atributos[a]==value_attrib)
-                self.atributos[a].prob[index_attrib, index_clase] += 1
+                    #value_attrib_unknown[a] += 1
+                    continue
+                index_attrib = np.where(self.valores_atributos.get(self.atributos[a])==value_attrib)
+                self.train[1][a][index_attrib][index_clase] += 1
                 
         # Asignando probabilidades
         
         # Clases
         for c in range(len(self.clases)):
-            self.clases.prob[c] = log(self.clases.prob[c]/(len(entr.votos_clases)-value_clase_unknown))
+            if(self.train[0][c] != 0):
+                self.train[0][c] = log(self.train[0][c]/(len(self.clases)-value_clase_unknown))
         
         # Atributos
         for a in range(len(self.atributos)):
-            for c in range(len(self.clases)):
-                self.atributos[a].prob[c] = log(self.atributos[a].prob[c]/self.clases.prob[c])
-                
-        ###
-        # Falta incorporar el suavizado, pero de
-        # momento vamos con una versión básica
-        ###
-        
-        # *********** COMPLETA EL CรDIGO **************
-        
+            for v in range(len(self.valores_atributos.get(self.atributos[a]))):
+                for c in range(len(self.clases)):
+                    if self.train[0][c] != 0 and self.train[1][a][v][c] != 0:
+                        self.train[1][a][v][c] = log((self.train[1][a][v][c] + self.k)/(self.train[0][c]) +
+                                  self.k*len(self.valores_atributos.get(self.atributos[a])))
+                        
     def clasifica(self,ejemplo):
 
         """ 
