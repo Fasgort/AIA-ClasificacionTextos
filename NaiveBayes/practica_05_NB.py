@@ -275,6 +275,11 @@ class ClasificadorNaiveBayes(MetodoClasificacion):
             
             # Elección del mejor ajuste
             self.k = conj_ajustes[np.argmax(rend_ajustes)]
+            print("Se ha estudiado el siguiente conjunto de ajustes:")
+            print(conj_ajustes)
+            print("La precisión de cada ajuste, respecto al conjunto de validación, son respectivamente, las siguientes:")
+            print(rend_ajustes)
+            print("Por lo tanto, se ha elegido el ajuste " + str(self.k) + ".")
             
             
                           
@@ -328,6 +333,8 @@ from votes import *
 clasificadorVotos = ClasificadorNaiveBayes(votos_atributo_clasificacion,
                                            votos_clases, votos_atributos,
                                            votos_valores_atributos, 1)
+
+print("Entrenando clasificador de votos.")
 clasificadorVotos.entrena(votos_entr, votos_entr_clas, votos_valid,
                           votos_valid_clas, True)
 
@@ -364,9 +371,17 @@ for c in range(len(votos_test_clas)):
         aciertos += 1
 accuracy = aciertos/len(votos_test_clas)
 print("La precisión del clasificador ha sido del " + str(accuracy*100) + " % para la predicción del partido político.")
+print()
+print()
 
-## Resultados precisión (accuracy)
+## Resultados ajuste + precisión (accuracy)
 #
+# Entrenando clasificador de votos.
+# Se ha estudiado el siguiente conjunto de ajustes:
+# [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50, 100]
+# La precisión de cada ajuste, respecto al conjunto de validación, son respectivamente, las siguientes:
+# [0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9710144927536232, 0.9420289855072463, 0.9420289855072463]
+# Por lo tanto, se ha elegido el ajuste 0.001.
 # La precisión del clasificador ha sido del 83.9080459770115 % para la predicción del partido político.
 #
 ###
@@ -383,6 +398,8 @@ from digitdata import readDigitData
 clasificadorDigitos = ClasificadorNaiveBayes(digitos_atributo_clasificacion,
                                              digitos_clases, digitos_atributos,
                                              digitos_valores_atributos, 1)
+
+print("Entrenando clasificador de dígitos.")
 clasificadorDigitos.entrena(digitos_entr, digitos_entr_clas, digitos_valid,
                             digitos_valid_clas, True)
 
@@ -468,9 +485,17 @@ for c in range(len(digitos_test_clas)):
         aciertos += 1
 accuracy = aciertos/len(digitos_test_clas)
 print("La precisión del clasificador ha sido del " + str(accuracy*100) + " % para la predicción de dígitos.")
+print()
+print()
 
-## Resultados precisión (accuracy)
+## Resultados ajuste + precisión (accuracy)
 #
+# Entrenando clasificador de dígitos.
+# Se ha estudiado el siguiente conjunto de ajustes:
+# [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50, 100]
+# La precisión de cada ajuste, respecto al conjunto de validación, son respectivamente, las siguientes:
+# [0.822, 0.819, 0.817, 0.817, 0.817, 0.818, 0.81, 0.799, 0.791, 0.764, 0.716]
+# Por lo tanto, se ha elegido el ajuste 0.001.
 # La precisión del clasificador ha sido del 77.4 % para la predicción de dígitos.
 #
 ###
