@@ -58,7 +58,7 @@ parameters = {
     'mnb_clf__alpha': [0.001, 0.01, 0.1, 1, 10, 100]
     }
 
-gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=10, test_size=0.2))
+gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=3, test_size=0.2))
 
 X_train = [x[1] for x in tweets_train]
 Y_train = [x[0] for x in tweets_train]
