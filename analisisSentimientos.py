@@ -46,5 +46,25 @@ tweets_test = tweets[splitpoint:]
 estimators = [('tfidf_vect', TfidfVectorizer()), ('mnb_clf', MultinomialNB())]
 pipeline = Pipeline(estimators)
 
+### Búsqueda de los parámetros óptimos
+parameters = {
+    'tfidf_vect__ngram_range': [(1, 1), (1, 2), (1, 3)],
+    'tfidf_vect__stop_words': ["english", None],
+    'tfidf_vect__smooth_idf': [True, False],
+    'tfidf_vect__use_idf': [True, False],
+    'tfidf_vect__sublinear_tf': [True, False],
+    'tfidf_vect__binary': [True, False],
+    'tfidf_vect__max_df':[0.5],
+    'mnb_clf__alpha': [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50, 100]
+    }
 
+gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=10, test_size=0.2))
+
+X_train = [x[1] for x in tweets_train]
+Y_train = [x[0] for x in tweets_train]
+X_test = [x[1] for x in tweets_test]
+Y_test = [x[0] for x in tweets_train]
+
+gs.fit(X_train, Y_train)
+pred = gs.predict(X_test)
              
