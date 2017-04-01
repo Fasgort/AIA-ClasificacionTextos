@@ -55,7 +55,7 @@ parameters = {
     'tfidf_vect__sublinear_tf': [True, False],
     'tfidf_vect__binary': [True, False],
     'tfidf_vect__max_df':[0.5],
-    'mnb_clf__alpha': [0.001, 0.01, 0.05, 0.1, 0.5, 1, 5, 10, 20, 50, 100]
+    'mnb_clf__alpha': [0.001, 0.01, 0.1, 1, 10, 100]
     }
 
 gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=10, test_size=0.2))
