@@ -54,7 +54,7 @@ parameters = {
     'tfidf_vect__use_idf': [True, False],
     'tfidf_vect__sublinear_tf': [True, False],
     'tfidf_vect__binary': [True, False],
-    'tfidf_vect__max_df':[0.5],
+    'tfidf_vect__max_df': [0.5],
     'mnb_clf__alpha': [0.001, 0.01, 0.1, 1, 10, 100]
     }
 
@@ -63,7 +63,7 @@ gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=3, test_size=
 X_train = [x[1] for x in tweets_train]
 Y_train = [x[0] for x in tweets_train]
 X_test = [x[1] for x in tweets_test]
-Y_test = [x[0] for x in tweets_train]
+Y_test = [x[0] for x in tweets_test]
 
 gs.fit(X_train, Y_train)
 pred = gs.predict(X_test)
