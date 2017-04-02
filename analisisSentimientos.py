@@ -2,7 +2,6 @@
 
 import json
 import re
-from copy import deepcopy
 from random import shuffle
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ShuffleSplit, GridSearchCV
@@ -25,6 +24,7 @@ def clasifica(gs, tweets):
     X_test = [x[1] for x in tweets_test]
     Y_test = [x[0] for x in tweets_test]
     
+    # Entrena y clasifica
     gs.fit(X_train, Y_train)
     pred = gs.predict(X_test)
                  
@@ -33,10 +33,10 @@ def clasifica(gs, tweets):
     precision = precision_score(Y_test, pred)
     recall = recall_score(Y_test, pred)
     f_score = f1_score(Y_test, pred)
-    fpr, tpr, _ = roc_curve(Y_test, pred, pos_label=2)
-    auc_ratio = auc(fpr, tpr)
+    fpr, tpr, _ = roc_curve(Y_test, pred)
+    auc_score = auc(fpr, tpr)
     
-    return accuracy, precision, recall, f_score, auc_ratio
+    return accuracy, precision, recall, f_score, auc_score
 
 ### Carga del corpus
 tweets = [] # classification, tweet
@@ -68,7 +68,7 @@ parameters = {
     'tfidf_vect__sublinear_tf': [True, False],
     'tfidf_vect__binary': [True, False],
     'tfidf_vect__max_df': [0.5],
-    'mnb_clf__alpha': [0.001, 0.01, 0.1, 1, 10, 100]
+    'mnb_clf__alpha': [0.001, 0.1, 1, 10]
     }
 
 gs = GridSearchCV(pipeline, parameters, cv = ShuffleSplit(n_splits=3, test_size=0.2))
@@ -81,69 +81,69 @@ tweets4 = [] # Negativos vs el resto
 for t in range(len(tweets)):
     tweet = tweets[t]
     if tweet[0] == 'positive':
-        tweets1.append(tweet)
-        tweets2.append(["con_sentimiento", tweet[1]])
-        tweets3.append(tweet)
-        tweets4.append(["no_negativo", tweet[1]])
+        tweets1.append([1, tweet[1]])
+        tweets2.append([1, tweet[1]])
+        tweets3.append([1, tweet[1]])
+        tweets4.append([0, tweet[1]])
     if tweet[0] == 'negative':
-        tweets1.append(tweet)
-        tweets2.append(["con_sentimiento", tweet[1]])
-        tweets3.append(["no_positivo", tweet[1]])
-        tweets4.append(tweet)
+        tweets1.append([0, tweet[1]])
+        tweets2.append([1, tweet[1]])
+        tweets3.append([0, tweet[1]])
+        tweets4.append([1, tweet[1]])
     if tweet[0] == 'neutral':
-        tweets2.append(["sin_sentimiento", tweet[1]])
-        tweets3.append(["no_positivo", tweet[1]])
-        tweets4.append(["no_negativo", tweet[1]])
+        tweets2.append([0, tweet[1]])
+        tweets3.append([0, tweet[1]])
+        tweets4.append([0, tweet[1]])
     if tweet[0] == 'irrelevant':
-        tweets3.append(["no_positivo", tweet[1]])
-        tweets4.append(["no_negativo", tweet[1]])
+        tweets3.append([0, tweet[1]])
+        tweets4.append([0, tweet[1]])
 
 ### Clasificación de los 4 problemas
 # Problema 1
-accuracy, precision, recall, f_score, auc_ratio = clasifica(gs, tweets1)
+accuracy, precision, recall, f_score, auc_score = clasifica(gs, tweets1)
 print("Para el problema de clasificación \"Positivos vs negativos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
-print("AUC ratio: " + str(auc_ratio))
+print("AUC score: " + str(auc_score))
 print()
 print()
 
 # Problema 2
-accuracy, precision, recall, f_score, auc_ratio = clasifica(gs, tweets2)
+accuracy, precision, recall, f_score, auc_score = clasifica(gs, tweets2)
 print("Para el problema de clasificación \"Con sentimiento vs sin sentimiento\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
-print("AUC ratio: " + str(auc_ratio))
+print("AUC score: " + str(auc_score))
 print()
 print()
 
 # Problema 3
-accuracy, precision, recall, f_score, auc_ratio = clasifica(gs, tweets3)
+accuracy, precision, recall, f_score, auc_score = clasifica(gs, tweets3)
 print("Para el problema de clasificación \"Positivos vs no positivos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
-print("AUC ratio: " + str(auc_ratio))
+print("AUC score: " + str(auc_score))
 print()
 print()
 
 # Problema 4
-accuracy, precision, recall, f_score, auc_ratio = clasifica(gs, tweets4)
+accuracy, precision, recall, f_score, auc_score = clasifica(gs, tweets4)
 print("Para el problema de clasificación \"Negativos vs no negativos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
 print("Precision: " + str(precision))
 print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
-print("AUC ratio: " + str(auc_ratio))
+print("AUC score: " + str(auc_score))
 print()
 print()
 
