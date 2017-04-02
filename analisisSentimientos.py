@@ -3,11 +3,12 @@
 import json
 import re
 from random import shuffle
+import matplotlib.pyplot as plt
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ShuffleSplit, GridSearchCV
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, auc
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, auc, precision_recall_curve
 
 
 ### Método que entrena el pipeline, clasifica y devuelve medidas de rendimiento
@@ -35,8 +36,10 @@ def clasifica(gs, tweets):
     f_score = f1_score(Y_test, pred)
     fpr, tpr, _ = roc_curve(Y_test, pred)
     auc_score = auc(fpr, tpr)
+    precision_recall = [[],[]]
+    precision_recall[0], precision_recall[1], _ = precision_recall_curve(Y_test, pred)
     
-    return accuracy, precision, recall, f_score, auc_score, gs.best_params_
+    return accuracy, precision, recall, f_score, auc_score, precision_recall, gs.best_params_
 
 ### Carga del corpus
 tweets = [] # classification, tweet
@@ -100,7 +103,9 @@ for t in range(len(tweets)):
 
 ### Clasificación de los 4 problemas
 # Problema 1
-accuracy, precision, recall, f_score, auc_score, best_params = clasifica(gs, tweets1)
+accuracy, precision, recall, f_score, auc_score, precision_recall, best_params = clasifica(gs, tweets1)
+print("##################################################")
+print()
 print("Para el problema de clasificación \"Positivos vs negativos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
@@ -109,6 +114,15 @@ print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
 print("AUC score: " + str(auc_score))
 print()
+plt.clf()
+plt.plot(precision_recall[0], precision_recall[1], lw=2, color='navy')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title('Precision-Recall curve')
+plt.show()
+print()
 print("Los mejores parámetros para el pipeline fueron los siguientes:")
 print()
 print("ngram_range: " + str(best_params["tfidf_vect__ngram_range"]))
@@ -119,10 +133,36 @@ print("sublinear_tf: " + str(best_params["tfidf_vect__sublinear_tf"]))
 print("binary: " + str(best_params["tfidf_vect__binary"]))
 print("alpha: " + str(best_params["mnb_clf__alpha"]))
 print()
+print("##################################################")
 print()
+# Resultados
+#
+# Para el problema de clasificación "Positivos vs negativos", obtenemos los siguientes resultados:
+#
+# Accuracy: 0.771929824561
+# Precision: 0.826086956522
+# Recall: 0.678571428571
+# F-score: 0.745098039216
+# AUC score: 0.770320197044
+#
+# (Imagen con la curva Precision/Recall)
+#
+# Los mejores parámetros para el pipeline fueron los siguientes:
+#
+# ngram_range: (1, 1)
+# stop_words: None
+# smooth_idf: True
+# use_idf: True
+# sublinear_tf: True
+# binary: False
+# alpha: 0.1
+#
+###
 
 # Problema 2
-accuracy, precision, recall, f_score, auc_score, best_params = clasifica(gs, tweets2)
+accuracy, precision, recall, f_score, auc_score, precision_recall, best_params = clasifica(gs, tweets2)
+print("##################################################")
+print()
 print("Para el problema de clasificación \"Con sentimiento vs sin sentimiento\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
@@ -131,6 +171,15 @@ print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
 print("AUC score: " + str(auc_score))
 print()
+plt.clf()
+plt.plot(precision_recall[0], precision_recall[1], lw=2, color='navy')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title('Precision-Recall curve')
+plt.show()
+print()
 print("Los mejores parámetros para el pipeline fueron los siguientes:")
 print()
 print("ngram_range: " + str(best_params["tfidf_vect__ngram_range"]))
@@ -141,10 +190,36 @@ print("sublinear_tf: " + str(best_params["tfidf_vect__sublinear_tf"]))
 print("binary: " + str(best_params["tfidf_vect__binary"]))
 print("alpha: " + str(best_params["mnb_clf__alpha"]))
 print()
+print("##################################################")
 print()
+# Resultados
+#
+# Para el problema de clasificación "Con sentimiento vs sin sentimiento", obtenemos los siguientes resultados:
+#
+# Accuracy: 0.703389830508
+# Precision: 0.63768115942
+# Recall: 0.354838709677
+# F-score: 0.455958549223
+# AUC score: 0.623071528752
+#
+# (Imagen con la curva Precision/Recall)
+#
+# Los mejores parámetros para el pipeline fueron los siguientes:
+#
+# ngram_range: (1, 2)
+# stop_words: None
+# smooth_idf: True
+# use_idf: False
+# sublinear_tf: True
+# binary: False
+# alpha: 0.1
+#
+###
 
 # Problema 3
-accuracy, precision, recall, f_score, auc_score, best_params = clasifica(gs, tweets3)
+accuracy, precision, recall, f_score, auc_score, precision_recall, best_params = clasifica(gs, tweets3)
+print("##################################################")
+print()
 print("Para el problema de clasificación \"Positivos vs no positivos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
@@ -153,6 +228,15 @@ print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
 print("AUC score: " + str(auc_score))
 print()
+plt.clf()
+plt.plot(precision_recall[0], precision_recall[1], lw=2, color='navy')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title('Precision-Recall curve')
+plt.show()
+print()
 print("Los mejores parámetros para el pipeline fueron los siguientes:")
 print()
 print("ngram_range: " + str(best_params["tfidf_vect__ngram_range"]))
@@ -163,10 +247,36 @@ print("sublinear_tf: " + str(best_params["tfidf_vect__sublinear_tf"]))
 print("binary: " + str(best_params["tfidf_vect__binary"]))
 print("alpha: " + str(best_params["mnb_clf__alpha"]))
 print()
+print("##################################################")
 print()
+# Resultados
+#
+# Para el problema de clasificación "Positivos vs no positivos", obtenemos los siguientes resultados:
+#
+# Accuracy: 0.874666666667
+# Precision: 0.75
+# Recall: 0.117647058824
+# F-score: 0.203389830508
+# AUC score: 0.555737109659
+#
+# (Imagen con la curva Precision/Recall)
+#
+# Los mejores parámetros para el pipeline fueron los siguientes:
+#
+# ngram_range: (1, 2)
+# stop_words: None
+# smooth_idf: True
+# use_idf: False
+# sublinear_tf: True
+# binary: True
+# alpha: 0.1
+#
+###
 
 # Problema 4
-accuracy, precision, recall, f_score, auc_score, best_params = clasifica(gs, tweets4)
+accuracy, precision, recall, f_score, auc_score, precision_recall, best_params = clasifica(gs, tweets4)
+print("##################################################")
+print()
 print("Para el problema de clasificación \"Negativos vs no negativos\", obtenemos los siguientes resultados:")
 print()
 print("Accuracy: " + str(accuracy))
@@ -175,6 +285,15 @@ print("Recall: " + str(recall))
 print("F-score: " + str(f_score))
 print("AUC score: " + str(auc_score))
 print()
+plt.clf()
+plt.plot(precision_recall[0], precision_recall[1], lw=2, color='navy')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0])
+plt.title('Precision-Recall curve')
+plt.show()
+print()
 print("Los mejores parámetros para el pipeline fueron los siguientes:")
 print()
 print("ngram_range: " + str(best_params["tfidf_vect__ngram_range"]))
@@ -185,5 +304,29 @@ print("sublinear_tf: " + str(best_params["tfidf_vect__sublinear_tf"]))
 print("binary: " + str(best_params["tfidf_vect__binary"]))
 print("alpha: " + str(best_params["mnb_clf__alpha"]))
 print()
+print("##################################################")
 print()
+# Resultados
+#
+# Para el problema de clasificación "Negativos vs no negativos", obtenemos los siguientes resultados:
+#
+# Accuracy: 0.869333333333
+# Precision: 0.857142857143
+# Recall: 0.28125
+# F-score: 0.423529411765
+# AUC score: 0.635801848875
+#
+# (Imagen con la curva Precision/Recall)
+#
+# Los mejores parámetros para el pipeline fueron los siguientes:
+#
+# ngram_range: (1, 1)
+# stop_words: None
+# smooth_idf: False
+# use_idf: True
+# sublinear_tf: False
+# binary: False
+# alpha: 0.1
+#
+###
 
