@@ -88,16 +88,16 @@ for t in range(len(tweets)):
         tweets2.append([1, tweet[1]])
         tweets3.append([1, tweet[1]])
         tweets4.append([0, tweet[1]])
-    if tweet[0] == 'negative':
+    elif tweet[0] == 'negative':
         tweets1.append([0, tweet[1]])
         tweets2.append([1, tweet[1]])
         tweets3.append([0, tweet[1]])
         tweets4.append([1, tweet[1]])
-    if tweet[0] == 'neutral':
+    elif tweet[0] == 'neutral':
         tweets2.append([0, tweet[1]])
         tweets3.append([0, tweet[1]])
         tweets4.append([0, tweet[1]])
-    if tweet[0] == 'irrelevant':
+    elif tweet[0] == 'irrelevant':
         tweets3.append([0, tweet[1]])
         tweets4.append([0, tweet[1]])
 
