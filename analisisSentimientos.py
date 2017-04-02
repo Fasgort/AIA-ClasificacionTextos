@@ -196,11 +196,11 @@ print()
 #
 # Para el problema de clasificación "Con sentimiento vs sin sentimiento", obtenemos los siguientes resultados:
 #
-# Accuracy: 0.703389830508
-# Precision: 0.63768115942
-# Recall: 0.354838709677
-# F-score: 0.455958549223
-# AUC score: 0.623071528752
+# Accuracy: 0.779661016949
+# Precision: 0.716666666667
+# Recall: 0.413461538462
+# F-score: 0.524390243902
+# AUC score: 0.672730769231
 #
 # (Imagen con la curva Precision/Recall)
 #
